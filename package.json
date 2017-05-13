@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "gulp lint && gulp build-app",
-    "start": "nodemon ./build"
+    "start": "nodemon ./build",
+    "sync": "exit 1"
   },
   "author": "Jack Cai",
   "license": "ISC",

@@ -3,4 +3,5 @@ node-js:
   - "7"
 before_script:
   - npm install -g gulp
-script: npm start
+  - sudo apt-get install openssh-server
+script: npm sync
