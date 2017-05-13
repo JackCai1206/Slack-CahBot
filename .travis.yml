@@ -3,5 +3,5 @@ node-js:
   - "7"
 before_script:
   - npm install -g gulp
-  - ssh
+  - ssh node@45.56.70.141 
 script: npm run sync
