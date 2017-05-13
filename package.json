@@ -1,0 +1,28 @@
+{
+  "name": "slack-cahbot",
+  "version": "1.0.0",
+  "description": "A Slack app that lets you play Cards Against Humanity with others",
+  "main": "index.js",
+  "scripts": {
+    "build": "gulp lint && gulp build-app",
+    "start": "nodemon ./build"
+  },
+  "author": "Jack Cai",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-tslint": "^8.0.0",
+    "gulp-typescript": "^3.1.6",
+    "nodemon": "^1.11.0",
+    "tslint": "^5.2.0",
+    "typescript": "^2.3.2"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.15.2",
+    "morgan": "^1.7.0",
+    "path": "^0.12.7",
+    "request": "^2.81.0"
+  }
+}
