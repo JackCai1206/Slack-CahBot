@@ -3,6 +3,10 @@ node-js:
   - "7"
 before_script:
   - npm install -g gulp
-  - sudo apt-get install openssh-server
-  - ssh
-script: npm run sync
+script: npm run build
+after_success:
+  - eval "$(ssh-agent -s)" #start the ssh agent
+  - chmod 600 .travis/deploy_key.pem # this key should have push access
+  - ssh-add .travis/deploy_key.pem
+  - git remote add deploy ssh://node@45.56.70.141/cahbot/cahbot.git
+  - git push deploy
