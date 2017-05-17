@@ -3,7 +3,7 @@ node-js:
   - "7"
 before_script:
   - npm install -g gulp
-  - node -v
+  - nvm install 7
 script: npm run build
 after_success:
   - eval "$(ssh-agent -s)" #start the ssh agent
