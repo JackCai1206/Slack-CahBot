@@ -1,6 +1,5 @@
 eval "$(ssh-agent -s)" #start the ssh agent
-cat deployment_key.pub
-echo $DEPLOYMENT_KEY >> deployment_key.pub
+echo $DEPLOYMENT_KEY > deployment_key.pub
 chmod 600 deployment_key.pub # this key should have push access
 ssh-add deployment_key.pub
 rm deployment_key.pub
