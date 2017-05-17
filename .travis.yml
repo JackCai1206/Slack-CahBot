@@ -1,8 +1,9 @@
 language: node_js
 node-js: 
-  - "node"
+  - "7"
 before_script:
   - npm install -g gulp
+  - node -v
 script: npm run build
 after_success:
   - eval "$(ssh-agent -s)" #start the ssh agent
