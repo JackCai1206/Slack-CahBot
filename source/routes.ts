@@ -1,6 +1,6 @@
 import * as express from 'express';
 
-class Router {
+export class Router {
 
 	public router: express.Router;
 

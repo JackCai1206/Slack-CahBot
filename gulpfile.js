@@ -1,4 +1,4 @@
-let gulp = require('gulp'), 
+var gulp = require('gulp'), 
 	tslint = require('gulp-tslint'),
 	tsc = require('gulp-typescript');
 
@@ -10,7 +10,7 @@ gulp.task('lint', function() {
 	.pipe(tslint({ }))
 });
 
-let tsProject = tsc.createProject('tsconfig.json');
+var tsProject = tsc.createProject('tsconfig.json');
 
 gulp.task('build-app', function() {
     return gulp.src([

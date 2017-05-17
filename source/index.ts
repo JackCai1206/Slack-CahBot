@@ -3,7 +3,7 @@ import * as express from 'express';
 import * as logger from 'morgan';
 import * as bodyParser from 'body-parser';
 
-import Router from 'routes';
+import {Router} from './routes';
 
 class App {
 	public express: express.Application;
