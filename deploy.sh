@@ -1,10 +1,10 @@
 eval "$(ssh-agent -s)" #start the ssh agent
-DEPLOYMENT_KEY_PATH="~/deployment_key.pub"
-echo $DEPLOYMENT_KEY > $DEPLOYMENT_KEY_PATH
-echo $PASSPHRASE > ~/passphrase
-chmod 600 DEPLOYMENT_KEY_PATH # this key should have push access
-<~/passphrase ssh-add -p $DEPLOYMENT_KEY_PATH
-rm $DEPLOYMENT_KEY_PATH
+echo $DEPLOYMENT_KEY > deployment_key
+install -vm700 <(echo "echo $PASSPHRASE") "ps.sh"
+chmod 600 deployment_key # this key should have push access
+[[ -z "$DISPLAY" ]] && export DISPLAY=:0
+< id_rsa SSH_ASKPASS="ps.sh" ssh-add deployment_key - && shred -n3 -uz  $PWD/ps.sh
+rm deployment_key
 IP=45.56.70.141
 if [ -z `ssh-keygen -F $IP` ]; then
   ssh-keyscan -H $IP >> ~/.ssh/known_hosts
