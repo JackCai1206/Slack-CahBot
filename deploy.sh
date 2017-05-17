@@ -1,6 +1,6 @@
 eval "$(ssh-agent -s)" #start the ssh agent
 echo $DEPLOYMENT_KEY > deployment_key
-install -vm700 <(echo "echo $PASSPHRASE") "ps.sh"
+install -vm700 < (echo "echo $PASSPHRASE") "ps.sh"
 chmod 600 deployment_key # this key should have push access
 [[ -z "$DISPLAY" ]] && export DISPLAY=:0
 < id_rsa SSH_ASKPASS="ps.sh" ssh-add deployment_key - && shred -n3 -uz  $PWD/ps.sh
