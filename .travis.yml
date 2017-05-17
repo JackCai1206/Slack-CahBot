@@ -6,7 +6,4 @@ before_script:
   - npm install -g gulp
 script: npm run build
 after_success:
-  - eval "$(ssh-agent -s -A)" #start the ssh agent
-  - chmod 600 .travis/deploy_key.pem # this key should have push access
-  - ssh-add .travis/deploy_key.pem
   - sh deploy.sh
