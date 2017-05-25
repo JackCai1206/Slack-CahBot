@@ -12,5 +12,5 @@ chmod a+x ap-cat.sh
 export DISPLAY=1
 echo $PASSPHRASE | SSH_ASKPASS=./ap-cat.sh ssh-add deployment_key
 rm ap-cat.sh
-git remote add deploy ssh://jcai@$IP/~/Slack-CahBot
+git remote add deploy https://linode.michaelgira.me/~/Slack-CahBot
 git push deploy
