@@ -6,4 +6,4 @@ before_script:
   - npm install -g gulp
 script: npm run build
 after_success:
-  - sh deploy.sh
+  - sh .travis/deploy.sh
