@@ -12,5 +12,6 @@ fi
 # export DISPLAY=1
 # echo $PASSPHRASE | SSH_ASKPASS=./ap-cat.sh ssh-add deployment_key
 # rm ap-cat.sh
+cat deployment_key
 git remote add deploy git@45.56.70.141:/~/Slack-CahBot/
 git push deploy
