@@ -5,5 +5,6 @@ IP=45.56.70.141
 if [ -z `ssh-keygen -F $IP` ]; then
   ssh-keyscan -H $IP >> ~/.ssh/known_hosts
 fi
-git remote add deploy git@45.56.70.141:/~/slack-cahbot/Slack-CahBot/
+git config --global push.default matching
+git remote add deploy git@45.56.70.141:/home/git/slack-cahbot/Slack-CahBot
 git push deploy
