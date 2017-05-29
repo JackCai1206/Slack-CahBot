@@ -7,4 +7,5 @@ if [ -z `ssh-keygen -F $IP` ]; then
 fi
 git config --global push.default matching
 git remote add deploy git@45.56.70.141:/home/git/slack-cahbot/Slack-CahBot
+git remote -v
 git push deploy
