@@ -7,7 +7,7 @@ before_script:
 script: npm run build
 deploy:
   provider: script
-  script: .travis/deploy_build.sh
+  script: .travis/deploy.sh
   on:
     branch: master
 # after_success: 
