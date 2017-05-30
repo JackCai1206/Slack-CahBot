@@ -1,1 +1,0 @@
-scp -r build git@45.56.70.141:~/slack-cahbot/

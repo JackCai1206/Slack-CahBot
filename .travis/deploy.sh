@@ -10,10 +10,12 @@
 # git remote add deploy git@45.56.70.141:/home/git/slack-cahbot/Slack-CahBot/
 # git push deploy master
 
-git config user.email "ziyang_99@outlook.com"
-git config user.name "AsianPsychoBoy"
+# git config user.email "ziyang_99@outlook.com"
+# git config user.name "AsianPsychoBoy"
 
-git add .
-git commit -m "automated build"
+# git add .
+# git commit -m "automated build"
 
-git status
+# git status
+
+scp -r build git@45.56.70.141:~/slack-cahbot/
