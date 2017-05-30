@@ -15,3 +15,5 @@ git config user.name "AsianPsychoBoy"
 
 git add .
 git commit -m "automated build"
+
+git status
