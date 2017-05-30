@@ -11,6 +11,7 @@ deploy:
   on:
     branch: master
 after_success: 
+- git status
 - git add .
 - git commit -m "automated build"
 # - sh .travis/deploy.sh
