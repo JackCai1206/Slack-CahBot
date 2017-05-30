@@ -18,4 +18,4 @@ fi
 
 # git status
 
-scp -r build git@45.56.70.141:~/slack-cahbot/
+scp -r /build/ git@45.56.70.141:~/slack-cahbot/
