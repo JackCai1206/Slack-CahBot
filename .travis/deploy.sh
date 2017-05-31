@@ -11,4 +11,7 @@ git config --global push.default matching
 git remote add deploy git@45.56.70.141:$DEPLOY_DIR
 git push deploy master
 
-ssh git@45.56.70.141:$DEPLOY_DIR "npm install"
+ssh git@45.56.70.141 << EOF
+  cd $DEPLOY_DIR
+  npm install
+EOF
