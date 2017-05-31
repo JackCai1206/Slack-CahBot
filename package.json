@@ -6,7 +6,8 @@
   "scripts": {
     "build": "gulp lint && gulp build-app",
     "compile": "tsc && node bin/www",
-    "start": "nodemon -e ts --exec \"npm run compile\""
+    "start": "nodemon -e ts --exec \"npm run compile\"",
+    "deploy": "sh .travis/deploy.sh"
   },
   "author": "Jack Cai",
   "license": "ISC",
