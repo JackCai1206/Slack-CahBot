@@ -6,8 +6,9 @@ if [ -z `ssh-keygen -F $IP` ]; then
   ssh-keyscan -H $IP >> ~/.ssh/known_hosts
 fi
 
+DEPLOY_DIR=~/slack-cahbot/Slack-CahBot
 git config --global push.default matching
-git remote add deploy git@45.56.70.141:/home/git/slack-cahbot/Slack-CahBot/
+git remote add deploy git@45.56.70.141:$DEPLOY_DIR
 git push deploy master
 
-ssh git@45.56.70.141 "cd slack-cahbot/Slack-CahBot/; npm install"
+ssh git@45.56.70.141:$DEPLOY_DIR "npm install"
