@@ -1,7 +1,7 @@
 "use strict";
 
 //module dependencies
-var app = require("../source/index");
+var app = require("../build/index").default;
 var debug = require("debug")("express:server");
 var http = require("http");
 

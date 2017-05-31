@@ -1,9 +1,9 @@
-import * as path from 'path';
+import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as logger from 'morgan';
-import * as bodyParser from 'body-parser';
+import * as path from 'path';
 
-import {Router} from './routes';
+import { Router } from './routes';
 
 class App {
 	public express: express.Application;

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var bodyParser = require("body-parser");
 var express = require("express");
 var logger = require("morgan");
-var bodyParser = require("body-parser");
 var routes_1 = require("./routes");
 var App = (function () {
     function App() {

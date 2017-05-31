@@ -9,10 +9,10 @@ var Router = (function () {
     Router.prototype.routes = function () {
         this.router.post('/events', function (req, res, next) {
             if (req.body) {
-                console.log(req.body);
+                var ch = req.body.challenge;
+                res.type('text/plain');
+                res.send(ch);
             }
-            console.log('pls');
-            res.json({});
         });
     };
     return Router;
