@@ -10,4 +10,4 @@ git config --global push.default matching
 git remote add deploy git@45.56.70.141:/home/git/slack-cahbot/Slack-CahBot/
 git push deploy master
 
-ssh git@45.56.70.141 "cd slack-cahbot/Slack-CahBot/ && npm install"
+ssh git@45.56.70.141 "cd slack-cahbot/Slack-CahBot/; npm install"
