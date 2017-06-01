@@ -12,7 +12,6 @@ git remote add deploy git@45.56.70.141:$DEPLOY_DIR
 git push deploy master
 
 ssh apps@45.56.70.141 << EOF
-  chown -R :deploy $DEPLOY_DIR
   cd $DEPLOY_DIR
   npm install
 EOF
