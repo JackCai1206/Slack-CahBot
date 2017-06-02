@@ -16,7 +16,7 @@ export class Router {
 				res.type('text/plain');
 				res.send(ch);
 			}
-		});		
+		});
 	}
 
 }
