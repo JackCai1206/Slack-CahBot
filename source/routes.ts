@@ -10,8 +10,9 @@ export class Router {
 	}
 
 	private routes(): void {
-		this.router.post('/events', (req, res, next) => {
+		this.router.post('/slack/events', (req, res, next) => {
 			if (req.body) {
+				console.log(req.body);
 				let ch = req.body.challenge;
 				res.type('text/plain');
 				res.send(ch);
