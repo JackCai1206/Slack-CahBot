@@ -25,7 +25,7 @@ class App {
 			}
 		});
 
-		slackAPI.commands.on('/start', (sendMsg) => {
+		slackAPI.commands.on('/cah-start', (sendMsg) => {
 			sendMsg({
 				response_type: 'in_channel',
 				text: 'started'

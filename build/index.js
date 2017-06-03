@@ -20,7 +20,7 @@ var App = (function () {
                 endpoint: '/slack/actions'
             }
         });
-        slackAPI.commands.on('/start', function (sendMsg) {
+        slackAPI.commands.on('/cah-start', function (sendMsg) {
             sendMsg({
                 response_type: 'in_channel',
                 text: 'started'

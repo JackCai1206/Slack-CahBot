@@ -19,6 +19,7 @@ var SlackAPI = (function () {
         if (this.config.commands) {
             app.use(this.config.commands.endpoint, function (req, res, next) {
                 if (req.body) {
+                    console.log(req.body);
                     _this.commands.emit(req.body.command, SlackAPI.responseFactory(res));
                 }
             });
