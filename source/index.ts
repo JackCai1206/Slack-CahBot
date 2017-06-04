@@ -42,6 +42,7 @@ class App {
 		this.express.use(bodyParser.json());
 		this.express.use(bodyParser.urlencoded({ extended: false }));
 		this.express.use('/slack', function(req, res, next) {
+			console.log(req.body);
 			if (req.body.token === config.slackToken) {
 				next();
 			} else {
