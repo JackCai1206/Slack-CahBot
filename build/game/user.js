@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var User = (function () {
-    function User(data) {
+class User {
+    constructor(data, opt) {
         this.isJudge = false;
         this.data = data;
+        this.isJudge = opt.isJudge;
     }
-    return User;
-}());
+}
 exports.User = User;

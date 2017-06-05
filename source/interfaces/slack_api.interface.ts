@@ -1,4 +1,5 @@
 export interface SlackAPIConfig {
+	authToken: string;
 	events?: {};
 	commands?: {
 		endpoint: string;
@@ -22,7 +23,17 @@ export interface SlashCommandReq {
 }
 
 export interface SlackMessage {
-	response_type: 'in_channel' | 'ephemeral';
+	response_type?: 'in_channel' | 'ephemeral';
 	text: string;
-	attachments: {[key: string]: any}
+	attachments?: {[key: string]: any};
+	channel?: string;
 }
+
+export interface MessageResponse {
+	ok: boolean;
+	ts: string;
+	channel: string;
+	message: any;
+}
+
+export type SlashCommandResponseSender = (msg: SlackMessage) => void;

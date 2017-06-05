@@ -1,12 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var Game = (function () {
-    function Game(slackAPI) {
+class Game {
+    constructor(slackAPI, options) {
         this.participants = [];
-        slackAPI.commands.on('request-hand', function () { });
+        this.participants = options.participants;
+        this.threadId = options.threadId;
+        this.channelId = options.channelId;
+        slackAPI.commands.on('request-hand', () => { });
     }
-    Game.prototype.addUser = function (user) {
-    };
-    return Game;
-}());
+    addUser(user) {
+    }
+}
 exports.Game = Game;

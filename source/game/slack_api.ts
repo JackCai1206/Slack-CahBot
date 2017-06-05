@@ -1,16 +1,16 @@
-import * as request from 'request';
+import * as request from 'request-promise-native';
 import * as express from 'express';
 import { EventEmitter } from 'events';
-import { SlackAPIConfig, SlackMessage } from '../interfaces/slack_api.interface';
+import { SlackAPIConfig, SlackMessage, SlashCommandResponseSender, MessageResponse } from '../interfaces/slack_api.interface';
 
 export class SlackAPI {
 	commands: EventEmitter;
 	actions: EventEmitter;
 	config: SlackAPIConfig;
 
-	static responseFactory(res: express.Response): Function {
+	static responseFactory(res: express.Response): SlashCommandResponseSender {
 		return (msg: SlackMessage) => {
-			res.json(JSON.stringify(msg));
+			res.json(msg);
 		}
 	}
 
@@ -20,15 +20,18 @@ export class SlackAPI {
 		this.config = config;
 	}
 
-	sendMessage(): void {
-
+	sendMessage(msg: SlackMessage): request.RequestPromise {
+		let body = Object.assign({ token: this.config.authToken }, msg);
+		return request.post('https://slack.com/api/chat.postMessage', {
+			form: Object.assign({ token: this.config.authToken }, msg)
+		});
 	}
 
 	registerRoutes(app: express.Application) {
 		if (this.config.commands) {
 			app.use(this.config.commands.endpoint, (req, res, next) => {
 				if (req.body) {
-					this.commands.emit(req.body.command, SlackAPI.responseFactory(res));
+					this.commands.emit(req.body.command, req.body, SlackAPI.responseFactory(res));
 				}
 			});
 		}
