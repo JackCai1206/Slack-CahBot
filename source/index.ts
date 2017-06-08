@@ -14,7 +14,7 @@ import { Router } from './routes';
 
 class App {
 	public express: express.Application;
-	private game: Game;
+	private gameIndex: {[channelId: string]: Game | null} = {};
 	private slackAPI: SlackAPI;
 
 	constructor () {
@@ -23,6 +23,7 @@ class App {
 		this.routes();
 
 		this.slackAPI = new SlackAPI({
+			verificationToken: config.verificationToken,
 			authToken: config.oAuthToken,
 			commands: {
 				endpoint: '/slack/commands'
@@ -35,7 +36,7 @@ class App {
 		this.slackAPI.commands.on('/cah-start', (res: SlashCommandReq, sendMsg: SlashCommandResponseSender) => {
 			console.log(res);
 
-			if (this.game) {
+			if (this.gameIndex[res.channel_id]) {
 				sendMsg({
 					text: 'A game is already in progress.'
 				});
@@ -50,43 +51,53 @@ class App {
 				});
 
 				let userTokens = res.text.split(' ');
-				let judgeNum = Math.floor(Math.random() * userTokens.length);
-				let participants = userTokens.map((token, index) => {
-						let nameId = token.split('|');
-						let userData: UserData = {
-							id: nameId[0].slice(nameId[0].indexOf('<') + 1),
-							name: nameId[1].substr(0, nameId[1].indexOf('>'))
-						}
-						let userOptions: UserOptions = {
-							isJudge: index === judgeNum
-						}
-						return new User(userData, userOptions);
-					});
+				let judgeNum, participants, openGame;
+				openGame = parseInt(res.text, 10);
+				if (!openGame) {
+					openGame = false;
+					judgeNum = Math.floor(Math.random() * userTokens.length);
+					participants = userTokens.map((token, index) => {
+							let nameId = token.split('|');
+							let userData: UserData = {
+								id: nameId[0].slice(nameId[0].indexOf('<@') + 2),
+								name: nameId[1].substr(0, nameId[1].indexOf('>'))
+							}
+							let userOptions: UserOptions = {
+								isJudge: index === judgeNum
+							}
+							return new User(userData, userOptions);
+						});
+				}
 
 				this.slackAPI.sendMessage({
 					channel: res.channel_id,
-					text: 'Join this thread. Sending invitations to ' + participants.map(user => '@' + user.data.name).join(', ')
+					text: participants ? 'Join this thread. Sending invitations to ' + participants.map(user => '@' + user.data.name).join(', ')
+					: 'Open game, anyone can join'
 				}).then((gameThread: MessageResponse) => {
-					const options: GameOptions = {
+					let options: GameOptions = {
 						channelId: gameThread.channel,
-						participants: participants,
-						threadId: gameThread.ts
+						participants: participants || [],
+						threadId: gameThread.ts,
+						openGame: openGame
 					}
 
-					this.game = new Game(this.slackAPI, options);
+					this.gameIndex[gameThread.channel] = new Game(this.slackAPI, options);
 				}).catch(err => {
-					console.log(err.message);
+					console.log('Error sending message', err.message);
 				});
 			}
 		});
 
-		this.slackAPI.commands.on('/cah-stop', (res, sendMsg) => {
-			if (this.game) {
+		this.slackAPI.commands.on('/cah-stop', (res: SlashCommandReq, sendMsg) => {
+			let game = this.gameIndex[res.channel_id];
+			if (game) {
 				sendMsg({
 					response_type: 'in_channel',
 					text: 'Current game ended.'
 				});
-				delete this.game;
+				game.destroy();
+				this.gameIndex[res.channel_id] = null;
+				delete this.gameIndex[res.channel_id];
 			} else {
 				sendMsg({
 					response_type: 'in_channel',
@@ -103,14 +114,6 @@ class App {
 		this.express.use(logger('dev'));
 		this.express.use(bodyParser.json());
 		this.express.use(bodyParser.urlencoded({ extended: false }));
-		this.express.use('/slack', (req, res, next) => {
-			if (req.body.token === config.slackToken) {
-				next();
-			} else {
-				res.status(403);
-				res.send('Slack API token mismatch!');
-			}
-		});
 		this.express.use('/slack', (err, req, res, next) => {
 			console.log('custom handler', err);
 		})
