@@ -1,7 +1,12 @@
 import * as request from 'request';
 import * as express from 'express';
+import * as querystring from 'querystring';
 import { EventEmitter } from 'events';
-import { SlackAPIConfig, SlackMessage, SlashCommandResponseSender, MessageResponse } from '../interfaces/slack_api.interface';
+import {	SlackAPIConfig,
+			SlackMessage,
+			SlashCommandResponseSender,
+			MessageResponse,
+			SendMessageOptions } from '../interfaces/slack_api.interface';
 
 export class SlackAPI {
 	commands: EventEmitter;
@@ -20,15 +25,18 @@ export class SlackAPI {
 		this.config = config;
 	}
 
-	sendMessage(msg: SlackMessage): Promise<MessageResponse> {
+	sendMessage(msg: SlackMessage, options?: SendMessageOptions): Promise<MessageResponse> {
 		let body: any = Object.assign({ token: this.config.authToken }, msg);
 		if (body.attachments) {
 			body.attachments = JSON.stringify(body.attachments);
 		}
+
+		let url = options ? options.responseUrl : 'https://slack.com/api/chat.postMessage';
 		return new Promise((resolve, reject) => {
-			request.post('https://slack.com/api/chat.postMessage', {
+			request.post(url, {
 				form: body
-			}, (err, resStr) => {
+			}, (err, resStr: request.RequestResponse) => {
+				resStr.body = resStr.body.replace(/&quot;/g, '"');
 				let res = JSON.parse(resStr.body);
 				if (!err && res.ok === true) {
 					resolve(res);

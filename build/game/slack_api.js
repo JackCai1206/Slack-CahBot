@@ -13,15 +13,17 @@ class SlackAPI {
         this.actions = new events_1.EventEmitter();
         this.config = config;
     }
-    sendMessage(msg) {
+    sendMessage(msg, options) {
         let body = Object.assign({ token: this.config.authToken }, msg);
         if (body.attachments) {
             body.attachments = JSON.stringify(body.attachments);
         }
+        let url = options ? options.responseUrl : 'https://slack.com/api/chat.postMessage';
         return new Promise((resolve, reject) => {
-            request.post('https://slack.com/api/chat.postMessage', {
+            request.post(url, {
                 form: body
             }, (err, resStr) => {
+                resStr.body = resStr.body.replace(/&quot;/g, '"');
                 let res = JSON.parse(resStr.body);
                 if (!err && res.ok === true) {
                     resolve(res);

@@ -23,6 +23,26 @@ export interface SlashCommandReq {
 	response_url: string;
 }
 
+export interface ActionReq {
+	actions: any;
+	callback_id: string;
+	channel: {
+		id: string;
+		domain: string;
+	};
+	user: {
+		id: string;
+		name: string;
+	};
+	action_ts: string;
+	message_ts: string;
+	attachment_id: string;
+	token: string;
+	is_app_unfurl: boolean;
+	original_message: SlackMessage;
+	response_url: string;
+}
+
 export interface SlackMessage {
 	response_type?: 'in_channel' | 'ephemeral';
 	text: string;
@@ -38,12 +58,20 @@ export interface SlackMessage {
 			value?: string;
 			confirm?: any;
 			style?: 'default' | 'primary' | 'danger';
-			options?: string;
+			options?: {
+				text: string;
+				value: string;
+			}[];
 			option_groups?: string;
 			data_source?: string;
 			selected_options?: any[];
 			min_query_length?: number;
 		}[];
+		fields?: {
+			title: string;
+			value: string;
+			short: boolean;
+		}[]
 		attachment_type?: string;
 	}[];
 	channel?: string;
@@ -58,3 +86,7 @@ export interface MessageResponse {
 }
 
 export type SlashCommandResponseSender = (msg: SlackMessage) => void;
+
+export interface SendMessageOptions {
+	responseUrl: string;
+}

@@ -28,7 +28,7 @@ class App {
             console.log(res);
             if (this.gameIndex[res.channel_id]) {
                 sendMsg({
-                    text: 'A game is already in progress.'
+                    text: 'A game is already in progress in this channel.'
                 });
             }
             else if (!res.text || res.text.length === 0) {
