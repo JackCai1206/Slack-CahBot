@@ -7,7 +7,7 @@ class Game {
         this.slackAPI = slackAPI;
         this.invitedUsers = [];
         this.confirmedUsers = [];
-        this.cardsPicked = [];
+        this.cardsPicked = {};
         this.confirmedUsers = [];
         this.invitedUsers = options.participants;
         this.threadId = options.threadId;
@@ -136,66 +136,77 @@ class Game {
     recieveCards() {
         return new Promise((resolve, reject) => {
             this.slackAPI.actions.on('card_request', (payload, sendMsg) => {
-                let whiteCards = new Array(4).fill(0).map(v => this.cards.randomWhite());
-                sendMsg({
+                let targetUser = this.confirmedUsers.find((user) => {
+                    return user.data.id === payload.user.id;
+                });
+                if (!targetUser) {
+                    reject();
+                }
+                targetUser.whiteCards = targetUser.whiteCards.concat(new Array(4 - targetUser.whiteCards.length).fill(0).map(v => this.cards.randomWhite(payload.user.id)));
+                this.slackAPI.sendMessage({
                     response_type: 'ephemeral',
-                    text: this.cardsPicked.length + ' / ' + this.confirmedUsers.length + ' submitted.',
+                    text: Object.keys(this.cardsPicked).length + ' / ' + this.confirmedUsers.length + ' submitted.',
                     attachments: [
                         {
                             title: this.blackCard.text,
                             fallback: 'You can\'t pick a card.',
                             callback_id: 'card_pick',
-                            fields: [
-                                {
-                                    title: '1',
-                                    value: whiteCards[0].text,
-                                    short: true
-                                },
-                                {
-                                    title: '2',
-                                    value: whiteCards[1].text,
-                                    short: true
-                                },
-                                {
-                                    title: '3',
-                                    value: whiteCards[2].text,
-                                    short: true
-                                },
-                                {
-                                    title: '4',
-                                    value: whiteCards[3].text,
-                                    short: true
-                                }
-                            ],
-                            actions: new Array(this.blackCard.pick).fill(0).map(v => {
+                            fields: targetUser.whiteCards.map((card, index) => {
                                 return {
-                                    name: 'card_menu',
+                                    title: (index + 1).toString(),
+                                    value: targetUser.whiteCards[index].text,
+                                    short: true
+                                };
+                            }),
+                            actions: new Array(this.blackCard.pick).fill(0).map((v, i) => {
+                                return {
+                                    name: 'card_menu_' + i,
                                     text: 'Pick a card',
                                     type: 'select',
-                                    options: [
-                                        {
-                                            text: whiteCards[0].text,
-                                            value: '0'
-                                        },
-                                        {
-                                            text: whiteCards[1].text,
-                                            value: '1'
-                                        },
-                                        {
-                                            text: whiteCards[2].text,
-                                            value: '2'
-                                        },
-                                        {
-                                            text: whiteCards[3].text,
-                                            value: '3'
-                                        },
-                                    ]
+                                    options: targetUser.whiteCards.map((card, index) => {
+                                        return {
+                                            text: targetUser.whiteCards[index].text,
+                                            value: index.toString()
+                                        };
+                                    })
                                 };
                             })
                         }
                     ]
+                }, {
+                    responseUrl: payload.response_url
                 })
-                    .then(resolve)
+                    .then(() => {
+                    this.slackAPI.actions.on('card_pick', (_payload, _sendMsg) => {
+                        let _targetUser = this.confirmedUsers.find((user) => {
+                            return user.data.id === _payload.user.id;
+                        });
+                        this.cardsPicked[_payload.user.id] = [];
+                        for (let i = 0; i < _payload.actions.length; i++) {
+                            this.cardsPicked[_payload.user.id].push(_targetUser.whiteCards[parseInt(_payload.actions[i].selected_options[0].value, 10)]);
+                            _targetUser.whiteCards.splice(parseInt(_payload.actions[i], 10), 1);
+                        }
+                        _sendMsg({
+                            response_type: 'ephemeral',
+                            text: Object.keys(this.cardsPicked).length + ' / ' + this.confirmedUsers.length + ' players submitted their response.',
+                            attachments: [
+                                {
+                                    title: this.blackCard.text,
+                                    fallback: 'You can\'t pick a card.',
+                                    callback_id: 'card_pick',
+                                    fields: this.cardsPicked[_payload.user.id].map((card, index) => {
+                                        return {
+                                            title: 'Your choice ' + (index + 1),
+                                            value: card.text,
+                                            short: true
+                                        };
+                                    })
+                                }
+                            ]
+                        });
+                    });
+                    resolve();
+                })
                     .catch(reject);
             });
         });

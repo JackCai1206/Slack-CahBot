@@ -15,4 +15,5 @@ export interface BlackCard {
 export interface WhiteCard {
 	index: number;
 	text: string;
+	ownerId: string;
 }

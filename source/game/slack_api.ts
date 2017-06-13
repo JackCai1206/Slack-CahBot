@@ -27,15 +27,20 @@ export class SlackAPI {
 
 	sendMessage(msg: SlackMessage, options?: SendMessageOptions): Promise<MessageResponse> {
 		let body: any = Object.assign({ token: this.config.authToken }, msg);
-		if (body.attachments) {
+		let useUrl = !!options;
+		let url = options ? options.responseUrl : 'https://slack.com/api/chat.postMessage';
+
+		if (body.attachments && !useUrl) {
 			body.attachments = JSON.stringify(body.attachments);
+		} else if (useUrl) {
+			body = { payload: JSON.stringify(body) }
 		}
 
-		let url = options ? options.responseUrl : 'https://slack.com/api/chat.postMessage';
 		return new Promise((resolve, reject) => {
 			request.post(url, {
 				form: body
 			}, (err, resStr: request.RequestResponse) => {
+				console.log(resStr.request.body)
 				resStr.body = resStr.body.replace(/&quot;/g, '"');
 				let res = JSON.parse(resStr.body);
 				if (!err && res.ok === true) {
