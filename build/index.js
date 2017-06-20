@@ -79,13 +79,10 @@ class App {
         this.slackAPI.commands.on('/cah-stop', (res, sendMsg) => {
             let game = this.gameIndex[res.channel_id];
             if (game) {
-                sendMsg({
-                    response_type: 'in_channel',
-                    text: 'Current game ended.'
+                game.destroy().then(() => {
+                    this.gameIndex[res.channel_id] = null;
+                    delete this.gameIndex[res.channel_id];
                 });
-                game.destroy();
-                this.gameIndex[res.channel_id] = null;
-                delete this.gameIndex[res.channel_id];
             }
             else {
                 sendMsg({

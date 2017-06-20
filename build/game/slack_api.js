@@ -27,7 +27,6 @@ class SlackAPI {
             request.post(url, {
                 form: body
             }, (err, resStr) => {
-                console.log(resStr.request.body);
                 resStr.body = resStr.body.replace(/&quot;/g, '"');
                 let res = JSON.parse(resStr.body);
                 if (!err && res.ok === true) {

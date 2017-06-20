@@ -27,12 +27,23 @@ export class Game {
 		this.gameSize = options.openGame || options.participants.length;
 		this.cards = new Cards();
 
-		this.gameConfirm()
-		.then((res) => this.endGameConfirm(res))
-		.then(() => this.newRound())
-		.then(() => this.recieveCards())
-		.catch(console.log)
+		let addNewRound = () => {
+			confirmPromise = confirmPromise
+			.then(() => this.newRound())
+			.then(() => this.pickCards())
+			.then(() => this.collectCards())
+			.then(() => this.endCollectCards())
+			.then(() => this.examineCards())
+			.then(() => this.promptContinue())
+			.then(() => this.continueOrEnd())
+			.then(() => addNewRound())
+			.catch(() => this.slackAPI.commands.emit('/cah-stop', { channel_id: this.channelId }))
+		}
 
+		let confirmPromise = this.gameConfirm()
+		.then((res) => this.endGameConfirm(res))
+		.then(() => addNewRound())
+		.catch(() => this.slackAPI.commands.emit('/cah-stop', { channel_id: this.channelId }))
 	}
 
 	isInvited(id: string): boolean {
@@ -42,7 +53,7 @@ export class Game {
 			})
 	}
 
-	gameConfirm(): Promise<MessageResponse> {
+	gameConfirm(): Promise<any> {
 		return new Promise((resolve, reject) => {
 			this.slackAPI.sendMessage({
 				channel: this.channelId,
@@ -72,13 +83,17 @@ export class Game {
 					}
 				]
 			}).then((res: MessageResponse) => {
-				this.slackAPI.actions.on('game_confirm', (payload, sendMsg) => {
+				let confirmTimeout = setTimeout(() => {
+					console.log('confirmation closed');
+					if (this.confirmedUsers.length === 0) {
+						reject();
+					}
+					resolve(res);
+				}, 10000);
+				this.slackAPI.actions.on('game_confirm', (payload: ActionReq, sendMsg) => {
+					console.log(payload.actions);
 
-					let confirmTimeout = setTimeout(() => {
-						resolve(res);
-					}, 10000);
-
-					if (this.isInvited(payload.user.id)) {
+					if (this.isInvited(payload.user.id) && payload.actions[0].value === 'yes') {
 						this.confirmedUsers.push(new User(payload.user, {
 							isJudge: this.confirmedUsers.length > 0 ? false : true
 						}));
@@ -103,11 +118,16 @@ export class Game {
 							resolve(res);
 						}
 
+					} else if (this.isInvited(payload.user.id) && payload.actions[0].value === 'no') {
+						sendMsg({
+							response_type: 'ephemeral',
+							text: 'Rip.'
+						});
 					} else {
 						sendMsg({
 							response_type: 'ephemeral',
 							text: 'You are not invited to the game.'
-						})
+						});
 					}
 				});
 			}).catch(err => {
@@ -116,7 +136,7 @@ export class Game {
 		});
 	}
 
-	endGameConfirm(res: MessageResponse): Promise<MessageResponse> {
+	endGameConfirm(res: MessageResponse): Promise<any> {
 		console.log('end gameconfirm');
 		this.slackAPI.actions.removeAllListeners('game_confirm').addListener('game_confirm', (payload, sendMsg) => {
 			sendMsg({
@@ -156,7 +176,7 @@ export class Game {
 		})
 	}
 
-	recieveCards(): Promise<any> {
+	pickCards(): Promise<any> {
 		return new Promise((resolve, reject) => {
 			this.slackAPI.actions.on('card_request', (payload: ActionReq, sendMsg) => {
 				let targetUser = <User> this.confirmedUsers.find((user) => {
@@ -166,9 +186,11 @@ export class Game {
 				targetUser.whiteCards = targetUser.whiteCards.concat(
 					new Array(4 - targetUser.whiteCards.length).fill(0).map(v => this.cards.randomWhite(payload.user.id))
 				);
-				this.slackAPI.sendMessage({
+				sendMsg();
+				// temporary disable judge check
+				this.slackAPI.sendMessage(targetUser.isJudge ? {
 					response_type: 'ephemeral',
-					text: Object.keys(this.cardsPicked).length + ' / ' + this.confirmedUsers.length + ' submitted.',
+					text: Object.keys(this.cardsPicked).length + ' / ' + (this.confirmedUsers.length - 1) + ' submitted.',
 					attachments: [
 						{
 							title: this.blackCard.text,
@@ -196,46 +218,193 @@ export class Game {
 							})
 						}
 					]
+				} : {
+					response_type: 'ephemeral',
+					text: Object.keys(this.cardsPicked).length + ' / ' + this.confirmedUsers.length + ' submitted.',
+					attachments: [
+						{
+							title: this.blackCard.text,
+							fallback: 'You can\'t pick a card.',
+							callback_id: 'card_pick',
+							fields: [
+								{
+									title: 'You are the judge.',
+									value: 'Please wait until the cards are submitted.',
+									short: false
+								}
+							]
+						}
+					]
 				}, {
 					responseUrl: payload.response_url
 				})
 				.then(() => {
-					this.slackAPI.actions.on('card_pick', (_payload: ActionReq, _sendMsg) => {
-						let _targetUser = <User> this.confirmedUsers.find((user) => {
-							return user.data.id === _payload.user.id;
-						});
-						this.cardsPicked[_payload.user.id] = [];
-						for (let i = 0; i < _payload.actions.length; i++) {
-							this.cardsPicked[_payload.user.id].push(_targetUser.whiteCards[parseInt(_payload.actions[i].selected_options[0].value, 10)]);
-							_targetUser.whiteCards.splice(parseInt(_payload.actions[i], 10), 1);
-						}
-						_sendMsg({
-							response_type: 'ephemeral',
-							text: Object.keys(this.cardsPicked).length + ' / ' + this.confirmedUsers.length + ' players submitted their response.',
-							attachments: [
-								{
-									title: this.blackCard.text,
-									fallback: 'You can\'t pick a card.',
-									callback_id: 'card_pick',
-									fields: this.cardsPicked[_payload.user.id].map((card, index) => {
-										return {
-											title: 'Your choice ' + (index + 1),
-											value: card.text,
-											short: true
-										}
-									})
-								}
-							]
-						})
-					});
 					resolve()
 				})
 				.catch(reject)
 			});
+		});
+	}
+
+	collectCards(): Promise<any> {
+		return new Promise((resolve, reject) => {
+			this.slackAPI.actions.on('card_pick', (payload: ActionReq, sendMsg) => {
+				let targetUser = <User> this.confirmedUsers.find((user) => {
+					return user.data.id === payload.user.id;
+				});
+				this.cardsPicked[payload.user.id] = [];
+				for (let i = 0; i < payload.actions.length; i++) {
+					this.cardsPicked[payload.user.id].push(targetUser.whiteCards[parseInt(payload.actions[i].selected_options[0].value, 10)]);
+					targetUser.whiteCards.splice(parseInt(payload.actions[i], 10), 1);
+				}
+				sendMsg({
+					response_type: 'ephemeral',
+					text: Object.keys(this.cardsPicked).length + ' / ' + this.confirmedUsers.length + ' players submitted their response.',
+					attachments: [
+						{
+							title: this.blackCard.text,
+							fallback: 'You can\'t pick a card.',
+							callback_id: 'card_pick',
+							fields: this.cardsPicked[payload.user.id].map((card, index) => {
+								return {
+									title: 'Your choice ' + (index + 1),
+									value: card.text,
+									short: true
+								}
+							})
+						}
+					]
+				});
+				if (Object.keys(this.cardsPicked).length === this.confirmedUsers.length &&
+					Object.keys(this.cardsPicked).map(userId => {
+						return this.cardsPicked[userId].length === this.blackCard.pick;
+					}).reduce((pre, cur) => pre && cur)) {
+					resolve();
+				}
+			});
 		})
 	}
 
-	destroy(): void {
+	endCollectCards(): Promise<any> {
+		this.slackAPI.actions.removeAllListeners('card_request');
+		this.slackAPI.actions.removeAllListeners('card_pick');
+
+		let judge = <User> this.confirmedUsers.find(u => u.isJudge);
+		return this.slackAPI.sendMessage({
+			channel: this.channelId,
+			thread_ts: this.threadId,
+			text: '@' + judge.data.name + ' is the judge! Pick the most funny combination from below.',
+			attachments: [
+				{
+					title: this.blackCard.text,
+					attachment_type: 'default',
+					fallback: 'You are unable to pick a card.',
+					callback_id: 'judge_pick',
+					fields: Object.keys(this.cardsPicked).map((userId, index) => {
+						return {
+							title: (index + 1).toString(),
+							value: this.cardsPicked[userId].map(c => c.text).reduce((pre, cur) => pre + '\n' + cur),
+							short: true
+						}
+					}),
+					actions: [{
+						name: 'judge_menu',
+						text: 'Pick a card',
+						type: 'select',
+						options: Object.keys(this.cardsPicked).map((userId, index) => {
+							let user = <User> this.confirmedUsers.find(u => u.data.id === userId);
+							return {
+								text: this.cardsPicked[userId].map(c => c.text).reduce((pre, cur) => pre + '\n' + cur),
+								value: user.data.id
+							}
+						})
+					}]
+				}
+			]
+		});
+	}
+
+	examineCards(): Promise<any> {
+		return new Promise((resolve, reject) => {
+			this.slackAPI.actions.on('judge_pick', (payload: ActionReq, sendMsg) => {
+				let userId = payload.actions[0].selected_options[0].value;
+				let user = <User> this.confirmedUsers.find(u => u.data.id === userId);
+				user.awesomePts += 1;
+				sendMsg({
+					text: '@' + user.data.name + ' won!',
+					channel: this.channelId,
+					thread_ts: this.threadId,
+					attachments: [
+						{
+							title: 'Awesome points count:',
+							attachment_type: 'default',
+							fallback: 'Awsome points unable to display.',
+							callback_id: 'awsome_points',
+							fields: this.confirmedUsers.map(u => {
+								return {
+									title: '@' + u.data.name,
+									value: u.awesomePts + ' Pts',
+									short: true
+								}
+							})
+						}
+					]
+				})
+				resolve();
+			});
+		})
+	}
+
+	promptContinue(): Promise<any> {
+		this.slackAPI.actions.removeAllListeners('judge_pick');
+		return this.slackAPI.sendMessage({
+			channel: this.channelId,
+			thread_ts: this.threadId,
+			attachments: [
+				{
+					title: 'Continue for another round?',
+					attachment_type: 'default',
+					fallback: 'Confirm unable to display.',
+					callback_id: 'continue_confirm',
+					actions: [
+						{
+							name: 'confirm',
+							text: 'Yes',
+							type: 'button',
+							value: 'yes',
+							style: 'primary'
+						},
+						{
+							name: 'confirm',
+							text: 'No',
+							type: 'button',
+							value: 'no'
+						}
+					]
+				}
+			]
+		});
+	}
+
+	continueOrEnd(): Promise<any> {
+		return new Promise((resolve, reject) => {
+			this.slackAPI.actions.on('continue_confirm', (payload: ActionReq, sendMsg) => {
+				sendMsg();
+				if (payload.actions[0].value === 'yes') {
+					resolve();
+				} else {
+					reject();
+				}
+			});
+		});
+	}
+
+	destroy(): Promise<any> {
 		this.slackAPI.actions.removeAllListeners();
+		return this.slackAPI.sendMessage({
+			channel: this.channelId,
+			thread_ts: this.threadId,
+			text: 'Game in current channel ended.'
+		})
 	}
 }

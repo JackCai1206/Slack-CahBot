@@ -45,7 +45,7 @@ export interface ActionReq {
 
 export interface SlackMessage {
 	response_type?: 'in_channel' | 'ephemeral';
-	text: string;
+	text?: string;
 	attachments?: {
 		title?: string;
 		fallback: string;

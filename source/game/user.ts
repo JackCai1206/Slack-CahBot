@@ -5,6 +5,7 @@ export class User {
 	data: UserData;
 	isJudge = false;
 	whiteCards: WhiteCard[] = [];
+	awesomePts = 0;
 
 	constructor(data: UserData, opt: UserOptions) {
 		this.data = data;
