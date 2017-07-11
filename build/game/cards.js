@@ -3,6 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 class Cards {
     constructor() {
         this.cardsData = require('../../cards-data.json');
+        // this.cardsData = {
+        // 	blackCards: [{
+        // 		text: '',
+        // 		pick: 3
+        // 	}],
+        // 	whiteCards: ['1', '2', '3', '4']
+        // }
     }
     cleanText(txt) {
         return txt

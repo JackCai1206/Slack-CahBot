@@ -7,6 +7,9 @@ export interface SlackAPIConfig {
 	};
 	actions?: {
 		endpoint: string;
+	};
+	limitTo?: {
+		channel: string;
 	}
 }
 
@@ -24,7 +27,12 @@ export interface SlashCommandReq {
 }
 
 export interface ActionReq {
-	actions: any;
+	actions: {
+		name: string;
+		type: string;
+		selected_options?: any;
+		value: string;
+	}[];
 	callback_id: string;
 	channel: {
 		id: string;
@@ -46,6 +54,7 @@ export interface ActionReq {
 export interface SlackMessage {
 	response_type?: 'in_channel' | 'ephemeral';
 	text?: string;
+	replace_original?: boolean;
 	attachments?: {
 		title?: string;
 		fallback: string;
@@ -76,6 +85,7 @@ export interface SlackMessage {
 	}[];
 	channel?: string;
 	thread_ts?: string;
+	ts?: string;
 }
 
 export interface MessageResponse {
@@ -88,5 +98,6 @@ export interface MessageResponse {
 export type SlashCommandResponseSender = (msg: SlackMessage) => void;
 
 export interface SendMessageOptions {
-	responseUrl: string;
+	responseUrl?: string;
+	update?: boolean;
 }

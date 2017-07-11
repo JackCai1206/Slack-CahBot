@@ -9,12 +9,13 @@ const game_1 = require("./game/game");
 const user_1 = require("./game/user");
 const routes_1 = require("./routes");
 class App {
+    // private slackAPIIndex: {[channelId: string]: SlackAPI } = {};
     constructor() {
         this.gameIndex = {};
         this.express = express();
         this.middleware();
         this.routes();
-        this.slackAPI = new slack_api_1.SlackAPI({
+        let slackAPI = new slack_api_1.SlackAPI({
             verificationToken: config.verificationToken,
             authToken: config.oAuthToken,
             commands: {
@@ -24,8 +25,7 @@ class App {
                 endpoint: '/slack/actions'
             }
         });
-        this.slackAPI.commands.on('/cah-start', (res, sendMsg) => {
-            console.log(res);
+        slackAPI.commands.on('/cah-start', (res, sendMsg) => {
             if (this.gameIndex[res.channel_id]) {
                 sendMsg({
                     text: 'A game is already in progress in this channel.'
@@ -59,7 +59,7 @@ class App {
                         return new user_1.User(userData, userOptions);
                     });
                 }
-                this.slackAPI.sendMessage({
+                slackAPI.sendMessage({
                     channel: res.channel_id,
                     text: participants ? 'Join this thread. Sending invitations to ' + participants.map(user => '@' + user.data.name).join(', ')
                         : 'Open game, anyone can join'
@@ -70,13 +70,40 @@ class App {
                         threadId: gameThread.ts,
                         openGame: openGame
                     };
-                    this.gameIndex[gameThread.channel] = new game_1.Game(this.slackAPI, options);
+                    let newSlackAPI = new slack_api_1.SlackAPI({
+                        verificationToken: config.verificationToken,
+                        authToken: config.oAuthToken,
+                        commands: {
+                            endpoint: '/slack/commands'
+                        },
+                        actions: {
+                            endpoint: '/slack/actions'
+                        },
+                        limitTo: { channel: gameThread.channel }
+                    });
+                    newSlackAPI.registerRoutes(this.express);
+                    this.gameIndex[gameThread.channel] = new game_1.Game(newSlackAPI, options);
+                    newSlackAPI.commands.on('/cah-stop', (res, sendMsg) => {
+                        let game = this.gameIndex[res.channel_id];
+                        if (game) {
+                            game.destroy().then(() => {
+                                this.gameIndex[res.channel_id] = null;
+                                delete this.gameIndex[res.channel_id];
+                            });
+                        }
+                        else {
+                            sendMsg({
+                                response_type: 'ephemeral',
+                                text: 'There is no game to stop.'
+                            });
+                        }
+                    });
                 }).catch(err => {
                     console.log('Error sending message', err.message);
                 });
             }
         });
-        this.slackAPI.commands.on('/cah-stop', (res, sendMsg) => {
+        slackAPI.commands.on('/cah-stop', (res, sendMsg) => {
             let game = this.gameIndex[res.channel_id];
             if (game) {
                 game.destroy().then(() => {
@@ -86,12 +113,12 @@ class App {
             }
             else {
                 sendMsg({
-                    response_type: 'in_channel',
+                    response_type: 'ephemeral',
                     text: 'There is no game to stop.'
                 });
             }
         });
-        this.slackAPI.registerRoutes(this.express);
+        slackAPI.registerRoutes(this.express);
     }
     // Configure Express middleware.
     middleware() {
