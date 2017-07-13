@@ -19,7 +19,7 @@
     "tslint": "^5.5.0",
     "typescript": "^2.4.1",
     "concurrently": "^3.4.0",
-	"@types/body-parser": "^1.16.3",
+    "@types/body-parser": "^1.16.3",
     "@types/express": "^4.0.35",
     "@types/request": "0.0.46",
     "@types/request-promise-native": "^1.0.5"
