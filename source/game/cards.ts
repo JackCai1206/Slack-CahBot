@@ -17,10 +17,13 @@ export class Cards {
 	cleanText(txt): string {
 		return txt
 			.replace(/<small>(.*?)<\/small>/, '')
-			.replace(/<b>/, '')
+			.replace(/<b>/, '*')
 			.replace(/<br\/>/, '')
-			.replace(/<\/b>/, '')
-			.replace(/(_){1}(?!_)/, '_______');
+			.replace(/<\/b>/, '*')
+			.replace('_', '_______')
+			.replace('&quot', '"')
+			.replace(/<i>/, '_')
+			.replace(/<i\/>/, '_');
 	}
 
 	randomBlack(): BlackCard {

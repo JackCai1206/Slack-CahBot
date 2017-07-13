@@ -14,10 +14,13 @@ class Cards {
     cleanText(txt) {
         return txt
             .replace(/<small>(.*?)<\/small>/, '')
-            .replace(/<b>/, '')
+            .replace(/<b>/, '*')
             .replace(/<br\/>/, '')
-            .replace(/<\/b>/, '')
-            .replace(/(_){1}(?!_)/, '_______');
+            .replace(/<\/b>/, '*')
+            .replace('_', '_______')
+            .replace('&quot', '"')
+            .replace(/<i>/, '_')
+            .replace(/<i\/>/, '_');
     }
     randomBlack() {
         let index = Math.floor(Math.random() * this.cardsData.blackCards.length);

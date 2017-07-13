@@ -93,15 +93,15 @@ class App {
 					});
 					newSlackAPI.registerRoutes(this.express);
 					this.gameIndex[gameThread.channel] = new Game(newSlackAPI, options);
-					newSlackAPI.commands.on('/cah-stop', (res: SlashCommandReq, sendMsg) => {
-						let game = this.gameIndex[res.channel_id];
+					newSlackAPI.commands.on('/cah-stop', (cres: SlashCommandReq, csendMsg) => {
+						let game = this.gameIndex[cres.channel_id];
 						if (game) {
 							game.destroy().then(() => {
-								this.gameIndex[res.channel_id] = null;
-								delete this.gameIndex[res.channel_id];
+								this.gameIndex[cres.channel_id] = null;
+								delete this.gameIndex[cres.channel_id];
 							})
 						} else {
-							sendMsg({
+							csendMsg({
 								response_type: 'ephemeral',
 								text: 'There is no game to stop.'
 							});

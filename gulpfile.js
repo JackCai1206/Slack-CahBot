@@ -7,7 +7,11 @@ gulp.task('lint', function() {
 		'source/**/**.ts',
 		'test/**/**.test.ts'
 	])
-	.pipe(tslint({ }))
+	.pipe(tslint({
+		formatter: 'verbose',
+		configuration: 'tslint.json'
+	}))
+	.pipe(tslint.report())
 });
 
 let tsProject = tsc.createProject('tsconfig.json');
@@ -18,6 +22,6 @@ gulp.task('build-app', function() {
             'typings/main.d.ts/',
             'source/interfaces/interfaces.d.ts'
         ])
-        .pipe(tsc(tsProject))
+        .pipe(tsProject())
         .js.pipe(gulp.dest('build/'));
 });
