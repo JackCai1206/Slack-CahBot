@@ -86,6 +86,7 @@ class App {
                     newSlackAPI.commands.on('/cah-stop', (cres, csendMsg) => {
                         let game = this.gameIndex[cres.channel_id];
                         if (game) {
+                            csendMsg();
                             game.destroy().then(() => {
                                 this.gameIndex[cres.channel_id] = null;
                                 delete this.gameIndex[cres.channel_id];
@@ -106,6 +107,7 @@ class App {
         slackAPI.commands.on('/cah-stop', (res, sendMsg) => {
             let game = this.gameIndex[res.channel_id];
             if (game) {
+                sendMsg();
                 game.destroy().then(() => {
                     this.gameIndex[res.channel_id] = null;
                     delete this.gameIndex[res.channel_id];
