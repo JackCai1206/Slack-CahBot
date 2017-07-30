@@ -49,3 +49,8 @@ Temporary Items
 node_modules
 .travis/id_rsa
 config.json
+
+==== Keep Data Safe ====
+build/
+.travis/id_rsa.enc
+.travis/id_rsa.pub
