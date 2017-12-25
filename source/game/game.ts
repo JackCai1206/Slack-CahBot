@@ -90,7 +90,7 @@ export class Game {
 			}).then((res: MessageResponse) => {
 				let confirmTimeout = setTimeout(() => {
 					console.log('confirmation closed');
-					if (this.confirmedUsers.length === 0) {
+					if (this.confirmedUsers.length <= 1) {
 						reject();
 					}
 					resolve(res);

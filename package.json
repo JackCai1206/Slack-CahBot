@@ -6,7 +6,7 @@
   "scripts": {
     "build": "gulp lint && gulp build-app",
     "compile": "tsc",
-    "start": "concurrently \"tsc --watch\" \"nodemon bin/www --watch ./build --watch ./bin/www\"",
+    "start": "concurrently \"tsc --watch\" \"nodemon bin/www --watch ./build --watch ./bin/www --delay 1\"",
     "deploy": "sh .travis/deploy.sh"
   },
   "author": "Jack Cai",
